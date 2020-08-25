@@ -63,6 +63,7 @@ module serv_top
    wire [4:0]    rs2_addr;
 
    wire [3:0] 	 immdec_ctrl;
+   wire [3:0] 	immdec_en;
 
    wire 	 bne_or_bge;
    wire 	 cond_branch;
@@ -256,6 +257,7 @@ module serv_top
       .o_csr_imm_en       (csr_imm_en),
       //To top
       .o_immdec_ctrl      (immdec_ctrl),
+      .o_immdec_en        (immdec_en),
       .o_rd_csr_en        (rd_csr_en),
       .o_rd_alu_en        (rd_alu_en));
 
@@ -268,6 +270,7 @@ module serv_top
       .i_wb_rdt   (i_ibus_rdt[31:2]),
       .i_wb_en    (i_ibus_ack),
       .i_ctrl     (immdec_ctrl),
+      .i_immdec_en        (immdec_en),
       .i_cnt_done (cnt_done),
       //To RF
       .o_rd_addr  (rd_addr),
