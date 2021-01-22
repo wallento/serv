@@ -9,7 +9,7 @@ module serv_top
    input wire 		      i_timer_irq,
 `ifdef RISCV_FORMAL
    output reg 		      rvfi_valid = 1'b0,
-   output reg [63:0] 	      rvfi_order = 64'd0,
+   output reg [63:0] 	      rvfi_order /*= 64'd0*/,
    output reg [31:0] 	      rvfi_insn = 32'd0,
    output reg 		      rvfi_trap = 1'b0,
    output reg 		      rvfi_halt = 1'b0,
@@ -148,6 +148,10 @@ module serv_top
 
    wire [1:0]   lsb;
 
+   wire 	ilsb = &i_ibus_rdt[1:0];
+   always @(posedge clk)
+     assume(ilsb);
+   
    serv_state
      #(.WITH_CSR (WITH_CSR))
    state
@@ -256,6 +260,7 @@ module serv_top
    serv_bufreg bufreg
      (
       .i_clk    (clk),
+      .i_rst    (i_rst),
       .i_cnt0   (cnt0),
       .i_cnt1   (cnt1),
       .i_en     (!bufreg_hold),
@@ -435,11 +440,11 @@ module serv_top
 `ifdef RISCV_FORMAL
    reg [31:0] 	 pc = RESET_PC;
 
-   wire rs_en = (branch_op|mem_op|shift_op|slt_op) ? init : ctrl_pc_en;
+   wire rs_en = !(rd_csr_en & csr_d_sel) & ((branch_op|mem_op|shift_op|slt_op) ? init : ctrl_pc_en);
 
    always @(posedge clk) begin
       rvfi_valid <= cnt_done & ctrl_pc_en & !i_rst;
-      rvfi_order <= rvfi_order + {63'd0,rvfi_valid};
+      rvfi_order <= i_rst ? 64'd0 : rvfi_order + {63'd0,rvfi_valid};
       if (o_ibus_cyc & i_ibus_ack)
 	rvfi_insn <= i_ibus_rdt;
       if (o_wen0)
@@ -466,9 +471,20 @@ module serv_top
          rvfi_rs2_addr <= rs2_addr;
 	 rvfi_rd_addr  <= rd_addr;
       end
+      if (rd_csr_en & csr_d_sel) begin
+	rvfi_rs1_addr <= 5'd0;
+	rvfi_rs2_addr <= 5'd0;
+      end
+
       if (rs_en) begin
          rvfi_rs1_rdata <= {rs1,rvfi_rs1_rdata[31:1]};
-         rvfi_rs2_rdata <= {rs2,rvfi_rs2_rdata[31:1]};
+	 if (!rd_csr_en)
+           rvfi_rs2_rdata <= {rs2,rvfi_rs2_rdata[31:1]};
+      end
+
+      if (i_ibus_ack) begin
+	rvfi_rs1_rdata <= 32'd0;
+	rvfi_rs2_rdata <= 32'd0;
       end
 
       if (i_dbus_ack) begin

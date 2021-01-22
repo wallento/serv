@@ -117,7 +117,10 @@ module serv_state
 
       if (i_rst) begin
 	 o_cnt   <= 3'd0;
+	 o_cnt_en <= 1'b0;
+	 o_init   <= 1'b0;
 	 stage_two_pending <= 1'b0;
+	 stage_two_req <= 1'b0;
 	 o_ctrl_jump <= 1'b0;
 	 o_cnt_r <= 4'b0001;
       end
@@ -144,6 +147,8 @@ module serv_state
 	misalign_trap_sync <= trap_pending;
       if (i_ibus_ack)
 	misalign_trap_sync <= 1'b0;
+      if (i_rst)
+	irq_sync <= 1'b0;
    end // always @ (posedge i_clk)
       end else begin
 	 always @(*)

@@ -89,8 +89,8 @@ module serv_rf_if
 		 i_csr_en ? {4'b1000, i_csr_addr} :
 		 {1'b0,i_rs2_raddr};
 
-   assign o_rs1 = i_rdata0;
-   assign o_rs2 = i_rdata1;
+   assign o_rs1 = i_rdata0 & (|i_rs1_raddr);
+   assign o_rs2 = i_rdata1 & (|i_rs2_raddr);
    assign o_csr = i_rdata1 & i_csr_en;
    assign o_csr_pc = i_rdata1;
 

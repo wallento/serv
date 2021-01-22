@@ -79,8 +79,8 @@ module serv_decode
 
    //Matches system opcodes except CSR accesses (funct3 == 0)
    //No idea anymore why the !op21 condition is needed here
-   assign o_e_op = opcode[4] & opcode[2] & !op21 & !(|funct3);
-
+   assign o_e_op = !zhi & !zlo & opcode[4] & opcode[2] & !opcode[1] & !opcode[0] & !op21 & !(|funct3);
+//SYSTEM 11100
    assign o_ebreak = op20;
 
    //jal,branch =     imm
@@ -120,7 +120,7 @@ module serv_decode
    //Write to RD
    //True for OP-IMM, AUIPC, OP, LUI, SYSTEM, JALR, JAL, LOAD
    //False for STORE, BRANCH, MISC-MEM
-   assign o_rd_op = (opcode[2] |
+   assign o_rd_op = ((opcode[2] & !opcode[1] & !(opcode[4] & opcode[0])) |
 		     (!opcode[2] & opcode[4] & opcode[0]) |
 		     (!opcode[2] & !opcode[3] & !opcode[0])) & (|o_rf_rd_addr);
 
@@ -142,7 +142,7 @@ module serv_decode
    wire csr_valid = op20 | (op26 & !op22 & !op21);
 
    //Matches system ops except eceall/ebreak
-   wire csr_op = opcode[4] & opcode[2] & (|funct3);
+   wire csr_op = opcode[4] & opcode[3] & opcode[2] & !opcode[1] & !opcode[0] & (funct3[1] | funct3[0]);
    assign o_rd_csr_en = csr_op;
 
    assign o_csr_en         = csr_op & csr_valid;
@@ -191,8 +191,13 @@ module serv_decode
    assign o_alu_rd_sel[1] = (funct3[1:0] == 2'b01); //Shift
    assign o_alu_rd_sel[2] = (funct3[2:1] == 2'b01); //SLT*
    assign o_alu_rd_sel[3] = (funct3[2] & !(funct3[1:0] == 2'b01)); //Bool
+   reg 	zhi, zlo;
+   
    always @(posedge clk) begin
       if (i_wb_en) begin
+	 zhi <= (|i_wb_rdt[31:21]);
+	 zlo <= (|i_wb_rdt[19:7]);
+
          o_rf_rd_addr  <= i_wb_rdt[11:7];
          o_rf_rs1_addr <= i_wb_rdt[19:15];
          o_rf_rs2_addr <= i_wb_rdt[24:20];

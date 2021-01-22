@@ -1,6 +1,7 @@
 module serv_bufreg
   (
    input wire 	      i_clk,
+   input wire 	      i_rst,
    input wire 	      i_cnt0,
    input wire 	      i_cnt1,
    input wire 	      i_en,
@@ -34,6 +35,8 @@ module serv_bufreg
 	o_lsb[0] <= q;
       if (i_cnt1 & i_init)
 	o_lsb[1] <= q;
+      if (i_rst)
+	o_lsb <= 2'b00;
    end
 
    assign o_q = data[0];

@@ -99,6 +99,8 @@ module serv_rf_ram_if
 
       if (i_rst) begin
 	 wcnt <= 5'd0;
+	 wgo <= 1'b0;
+	 wreq_r <= 1'b0;
       end
    end
 
@@ -121,7 +123,7 @@ module serv_rf_ram_if
    reg [width-1:0]  rdata0;
    reg [width-2:0]  rdata1;
 
-   assign o_rdata0 = rdata0[0];
+   assign o_rdata0 = rdata0[0] /*& (|wreg)*/;
    assign o_rdata1 = rtrig1 ? i_rdata[0] : rdata1[0];
 
    assign rtrig0 = (rcnt[l2w-1:0] == 1);
