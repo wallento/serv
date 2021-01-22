@@ -54,7 +54,7 @@ module serv_ctrl
       else
 	assign new_pc = i_jump ? pc_plus_offset_aligned : pc_plus_4;
    endgenerate
-   assign o_rd  = (i_utype & pc_plus_offset_aligned) | (pc_plus_4 & i_jal_or_jalr);
+   assign o_rd  = (i_utype & pc_plus_offset /*_aligned*/) | (pc_plus_4 & i_jal_or_jalr);
 
    assign offset_a = i_pc_rel & pc;
    assign offset_b = i_utype ? (i_imm & i_cnt12to31): i_buf;

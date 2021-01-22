@@ -18,7 +18,7 @@ module serv_immdec
    input wire 	     i_wb_en,
    input wire [31:7] i_wb_rdt);
 
-   reg 	      signbit;
+   reg 		     imm31;
 
    reg [8:0]  imm19_12_20;
    reg 	      imm7;
@@ -37,10 +37,12 @@ module serv_immdec
    assign o_imm = i_cnt_done ? signbit : i_ctrl[0] ? imm11_7[0] : imm24_20[0];
    assign o_csr_imm = imm19_12_20[4];
 
+   wire       signbit = imm31 & !i_csr_imm_en;
+
    always @(posedge i_clk) begin
       if (i_wb_en) begin
 	 /* CSR immediates are always zero-extended, hence clear the signbit */
-	 signbit     <= i_wb_rdt[31] & !i_csr_imm_en;
+	 imm31       <= i_wb_rdt[31];
 	 imm19_12_20 <= {i_wb_rdt[19:12],i_wb_rdt[20]};
 	 imm7        <= i_wb_rdt[7];
 	 imm30_25    <= i_wb_rdt[30:25];

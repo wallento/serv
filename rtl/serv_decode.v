@@ -98,7 +98,7 @@ module serv_decode
    //Write to RD
    //True for OP-IMM, AUIPC, OP, LUI, SYSTEM, JALR, JAL, LOAD
    //False for STORE, BRANCH, MISC-MEM
-   assign o_rd_op = (opcode[2] |
+   assign o_rd_op = ((opcode[2] & !opcode[1] & !(opcode[4] & opcode[0])) |
 		     (!opcode[2] & opcode[4] & opcode[0]) |
 		     (!opcode[2] & !opcode[3] & !opcode[0]));
 
@@ -115,8 +115,8 @@ module serv_decode
    assign o_shift_op = op_or_opimm & (funct3[1:0] == 2'b01);
    assign o_slt_op   = op_or_opimm & (funct3[2:1] == 2'b01);
 
-   //Matches system ops except eceall/ebreak/mret
-   wire csr_op = opcode[4] & opcode[2] & (|funct3);
+   //Matches system ops except eceall/ebreak
+   wire csr_op = opcode[4] & opcode[3] & opcode[2] & !opcode[1] & !opcode[0] & (funct3[1] | funct3[0]);
 
 
    //op20
@@ -125,10 +125,10 @@ module serv_decode
 
    //opcode & funct3 & op21
 
-   assign o_ctrl_mret = opcode[4] & opcode[2] & op21 & !(|funct3);
+   assign o_ctrl_mret = (opcode[4] & opcode[2] & op21 & !(|funct3));
    //Matches system opcodes except CSR accesses (funct3 == 0)
    //and mret (!op21)
-   assign o_e_op = opcode[4] & opcode[2] & !op21 & !(|funct3);
+   assign o_e_op = !zhi & !zlo & opcode[4] & opcode[2] & !opcode[1] & !opcode[0] & !op21 & !(|funct3);
 
    //opcode & funct3 & imm30
 
@@ -207,8 +207,13 @@ module serv_decode
    assign o_alu_rd_sel[1] = (funct3[1:0] == 2'b01); //Shift
    assign o_alu_rd_sel[2] = (funct3[2:1] == 2'b01); //SLT*
    assign o_alu_rd_sel[3] = (funct3[2] & !(funct3[1:0] == 2'b01)); //Bool
+   reg 	zhi, zlo;
+   
    always @(posedge clk) begin
       if (i_wb_en) begin
+	 zhi <= (|i_wb_rdt[31:21]);
+	 zlo <= (|i_wb_rdt[19:7]);
+
          funct3        <= i_wb_rdt[14:12];
          imm30         <= i_wb_rdt[30];
          opcode        <= i_wb_rdt[6:2];

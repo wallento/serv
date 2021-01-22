@@ -16,7 +16,9 @@ module serv_rf_ram
 	memory[i_waddr] <= i_wdata;
       o_rdata <= memory[i_raddr];
    end
-
+`ifdef RISCV_FORMAL
+ `define SERV_CLEAR_RAM 1
+`endif
 `ifdef SERV_CLEAR_RAM
    integer i;
    initial

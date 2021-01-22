@@ -109,8 +109,8 @@ module serv_rf_if
 		     i_rs2_raddr[4:2] & {3{sel_rs2}},
 		     {1'b0,i_trap} | {i_mret,1'b0} | ({2{i_csr_en}} & i_csr_addr) | ({2{sel_rs2}} & i_rs2_raddr[1:0])};
 
-   assign o_rs1 = i_rdata0;
-   assign o_rs2 = i_rdata1;
+   assign o_rs1 = i_rdata0 & (|i_rs1_raddr);
+   assign o_rs2 = i_rdata1 & (|i_rs2_raddr);
    assign o_csr = i_rdata1 & i_csr_en;
    assign o_csr_pc = i_rdata1;
 
