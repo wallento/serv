@@ -21,6 +21,11 @@ filesets:
       - rtl/serv_rf_top.v
     file_type : verilogSource
 
+  config:
+    files:
+      - params.tcl
+    file_type : tclSource
+
 targets:
   default:
     filesets : [core]
@@ -38,6 +43,15 @@ targets:
       verilator:
         mode : lint-only
     toplevel : serv_rf_top
+
+  build:
+    default_tool : openlane
+    filesets : [core, config]
+    toplevel : serv_top
+    tools:
+      openlane:
+        clk_name : clk
+        clk_period : 10
 
 parameters:
   RESET_STRATEGY:
