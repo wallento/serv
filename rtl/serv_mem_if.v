@@ -32,7 +32,7 @@ module serv_mem_if
 
    wire [2:0] 	 tmp = {1'b0,i_bytecnt}+{1'b0,i_lsb};
 
-   wire 	 dat_en = i_shift_op | (i_en & !tmp[2]);
+   wire 	 dat_en = i_shift_op | (i_en & ((i_bytecnt == 2'd0) | !tmp[2]));
 
    wire 	 dat_cur =
 		 ((i_lsb == 2'd3) & dat[24]) |
