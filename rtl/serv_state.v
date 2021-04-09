@@ -185,8 +185,8 @@ module serv_state
 	    if (i_rst)
 	      if (RESET_STRATEGY != "NONE")
 		misalign_trap_sync_r <= 1'b0;
-	    assign misalign_trap_sync = misalign_trap_sync_r;
 	 end
+	 assign misalign_trap_sync = misalign_trap_sync_r;
       end else
 	assign misalign_trap_sync = 1'b0;
    endgenerate
